@@ -2,8 +2,12 @@ import { createClient } from "@libsql/client";
 import type { Achievement, Project } from "./types";
 
 const url =
-  (import.meta.env.TURSO_DATABASE_URL as string | undefined) ?? "file:./local.db";
-const authToken = import.meta.env.TURSO_AUTH_TOKEN as string | undefined;
+  (process.env.TURSO_DATABASE_URL as string | undefined) ??
+  (import.meta.env.TURSO_DATABASE_URL as string | undefined) ??
+  "file:./local.db";
+const authToken =
+  (process.env.TURSO_AUTH_TOKEN as string | undefined) ??
+  (import.meta.env.TURSO_AUTH_TOKEN as string | undefined);
 
 export const db = createClient({ url, authToken });
 
@@ -32,6 +36,10 @@ CREATE TABLE IF NOT EXISTS achievements (
   highlight_metric TEXT NOT NULL DEFAULT '',
   body TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT ''
 );
 `;
 
@@ -203,4 +211,26 @@ export async function updateAchievement(
 
 export async function deleteAchievement(id: string): Promise<void> {
   await db.execute({ sql: "DELETE FROM achievements WHERE id = ?", args: [id] });
+}
+
+export async function getSettings(): Promise<Record<string, string>> {
+  const res = await db.execute("SELECT key, value FROM settings");
+  const out: Record<string, string> = {};
+  for (const row of res.rows as Record<string, unknown>[]) {
+    out[String(row.key)] = String(row.value ?? "");
+  }
+  return out;
+}
+
+export async function saveSettings(
+  values: Record<string, string>,
+): Promise<void> {
+  const stmt = db.batch([
+    ...Object.entries(values).map(([key, value]) => ({
+      sql: `INSERT INTO settings (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      args: [key, value],
+    })),
+  ]);
+  await stmt;
 }

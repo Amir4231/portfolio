@@ -1,9 +1,11 @@
 ---
-import { site } from "../data/site";
+import { resolveSite } from "../data/site";
 import { MapPin } from "@lucide/astro";
 import GithubIcon from "./icons/GithubIcon.astro";
 import LinkedinIcon from "./icons/LinkedinIcon.astro";
 import XIcon from "./icons/XIcon.astro";
+
+const site = resolveSite(Astro.locals.settings);
 
 const year = new Date().getFullYear();
 

@@ -3,6 +3,7 @@ import matter from "gray-matter";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import crypto from "node:crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -37,6 +38,10 @@ CREATE TABLE IF NOT EXISTS achievements (
   body TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT ''
+);
 `;
 
 function slugify(title) {
@@ -51,6 +56,12 @@ function slugify(title) {
 function toIsoDate(value) {
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value ?? "");
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `scrypt:${salt}:${hash}`;
 }
 
 async function seedCollection(folder, buildInsert) {
@@ -106,5 +117,38 @@ await seedCollection("achievements", (data, body) => ({
     body,
   ],
 }));
+
+const DEFAULT_SETTINGS = {
+  name: "Alex Chen",
+  role: "Full-Stack Engineer",
+  location: "San Francisco, CA",
+  email: "hello@example.com",
+  github: "https://github.com/your-username",
+  linkedin: "https://www.linkedin.com/in/your-username",
+  twitter: "https://twitter.com/your-username",
+  resume: "/resume.pdf",
+  tagline:
+    "Full-stack engineer with 6+ years shipping production TypeScript, React, and Node.js applications. I obsess over performance, accessibility, and developer experience — turning complex problems into fast, elegant products.",
+  builtWith: "Built with Astro + Tailwind",
+};
+
+for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+  await db.execute({
+    sql: `INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`,
+    args: [key, value],
+  });
+}
+
+const existing = await db.execute("SELECT value FROM settings WHERE key = 'password_hash'");
+if (existing.rows.length === 0) {
+  const initial = process.env.ADMIN_PASSWORD || "admin";
+  await db.execute({
+    sql: `INSERT OR IGNORE INTO settings (key, value) VALUES ('password_hash', ?)`,
+    args: [hashPassword(initial)],
+  });
+  console.log(`seeded password_hash from ADMIN_PASSWORD (${initial === "admin" ? "default 'admin'" : "env"})`);
+} else {
+  console.log("password_hash already exists, keeping it");
+}
 
 console.log("seed complete →", url);

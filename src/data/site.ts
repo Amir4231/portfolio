@@ -1,4 +1,18 @@
-export const site = {
+export interface Site {
+  name: string;
+  role: string;
+  location: string;
+  email: string;
+  github: string;
+  linkedin: string;
+  twitter: string;
+  resume: string;
+  tagline: string;
+  builtWith: string;
+  avatar?: string;
+}
+
+export const site: Site = {
   name: "Alex Chen",
   role: "Full-Stack Engineer",
   location: "San Francisco, CA",
@@ -11,3 +25,34 @@ export const site = {
     "Full-stack engineer with 6+ years shipping production TypeScript, React, and Node.js applications. I obsess over performance, accessibility, and developer experience — turning complex problems into fast, elegant products.",
   builtWith: "Built with Astro + Tailwind",
 };
+
+export const SETTING_KEYS = [
+  "name",
+  "role",
+  "location",
+  "email",
+  "github",
+  "linkedin",
+  "twitter",
+  "resume",
+  "tagline",
+  "builtWith",
+  "avatar",
+] as const;
+
+export function resolveSite(settings?: Record<string, string>): Site {
+  const s = settings ?? {};
+  return {
+    name: s.name || site.name,
+    role: s.role || site.role,
+    location: s.location || site.location,
+    email: s.email || site.email,
+    github: s.github || site.github,
+    linkedin: s.linkedin || site.linkedin,
+    twitter: s.twitter || site.twitter,
+    resume: s.resume || site.resume,
+    tagline: s.tagline || site.tagline,
+    builtWith: s.builtWith || site.builtWith,
+    avatar: s.avatar || undefined,
+  };
+}

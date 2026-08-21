@@ -1,0 +1,136 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getSettings } from "../../lib/db";
+
+const settings = await getSettings();
+const error = Astro.url.searchParams.get("error");
+const saved = Astro.url.searchParams.get("saved");
+---
+
+<AdminLayout title="Settings">
+  <a href="/admin" class="text-sm text-muted transition hover:text-ink">
+    ← Back to admin
+  </a>
+
+  <h1 class="mt-4 font-serif text-2xl font-semibold text-ink">Site settings</h1>
+
+  {saved && (
+    <p class="mt-4 rounded-sm border border-emerald-600/40 bg-emerald-600/10 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">
+      Saved.
+    </p>
+  )}
+  {error === "avatar-size" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      Photo is too large. Keep it under 5MB.
+    </p>
+  )}
+  {error === "avatar-invalid" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      Couldn't process that image. Try a JPG or PNG.
+    </p>
+  )}
+  {error === "password" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      Current password is wrong.
+    </p>
+  )}
+  {error === "weak" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      New password must be at least 8 characters.
+    </p>
+  )}
+
+  <form method="post" action="/api/settings" enctype="multipart/form-data" class="mt-8 space-y-5">
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Name</span>
+        <input type="text" name="name" value={settings.name ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Role / title</span>
+        <input type="text" name="role" value={settings.role ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Location</span>
+      <input type="text" name="location" value={settings.location ?? ""}
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+    </label>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Email</span>
+        <input type="email" name="email" value={settings.email ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Resume link</span>
+        <input type="text" name="resume" value={settings.resume ?? ""} placeholder="/resume.pdf or https://..."
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-3">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">GitHub</span>
+        <input type="url" name="github" value={settings.github ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">LinkedIn</span>
+        <input type="url" name="linkedin" value={settings.linkedin ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">X / Twitter</span>
+        <input type="url" name="twitter" value={settings.twitter ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Tagline (shows under your name)</span>
+      <textarea name="tagline" rows="3"
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none">{settings.tagline ?? ""}</textarea>
+    </label>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Profile photo</span>
+      {settings.avatar && (
+        <img src={settings.avatar} alt="Current photo" width="96" height="96"
+          class="mb-2 mt-1 size-24 rounded-full border border-line object-cover" />
+      )}
+      <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp"
+        class="mt-1 block w-full text-sm text-muted file:mr-3 file:rounded-sm file:border-0 file:bg-accent file:px-3 file:py-2 file:text-xs file:font-semibold file:text-surface hover:file:opacity-90" />
+      <span class="mt-1 block text-xs text-faint">JPG/PNG, under 5MB. Cropped to a square, resized automatically.</span>
+    </label>
+
+    <button type="submit"
+      class="rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90">
+      Save settings
+    </button>
+  </form>
+
+  <section class="mt-14 border-t border-line pt-8">
+    <h2 class="font-serif text-xl font-semibold text-ink">Change password</h2>
+    <form method="post" action="/api/password" class="mt-4 max-w-sm space-y-4">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Current password</span>
+        <input type="password" name="current" required autocomplete="current-password"
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">New password</span>
+        <input type="password" name="new" required minlength="8" autocomplete="new-password"
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <button type="submit"
+        class="rounded-sm border border-line bg-raised px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
+        Change password
+      </button>
+    </form>
+  </section>
+</AdminLayout>

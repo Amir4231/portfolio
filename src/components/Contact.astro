@@ -1,6 +1,8 @@
 ---
-import { site } from "../data/site";
+import { resolveSite } from "../data/site";
 import { MapPin } from "@lucide/astro";
+
+const site = resolveSite(Astro.locals.settings);
 ---
 
 <section id="contact" class="scroll-mt-20" data-reveal>

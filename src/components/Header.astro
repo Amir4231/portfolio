@@ -1,7 +1,9 @@
 ---
-import { site } from "../data/site";
+import { resolveSite } from "../data/site";
 import ThemeToggle from "./ThemeToggle.astro";
 import { Menu } from "@lucide/astro";
+
+const site = resolveSite(Astro.locals.settings);
 
 const nav = [
   { href: "/#projects", label: "Work" },

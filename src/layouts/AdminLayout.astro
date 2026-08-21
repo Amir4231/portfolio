@@ -34,11 +34,16 @@ const { title = "Admin" } = Astro.props;
         <a href="/" class="font-serif text-lg font-semibold text-ink">
           ← Back to site
         </a>
-        <form method="post" action="/api/logout">
-          <button type="submit" class="text-sm text-muted transition hover:text-accent">
-            Log out
-          </button>
-        </form>
+        <div class="flex items-center gap-5">
+          <a href="/admin/settings" class="text-sm text-muted transition hover:text-accent">
+            Settings
+          </a>
+          <form method="post" action="/api/logout">
+            <button type="submit" class="text-sm text-muted transition hover:text-accent">
+              Log out
+            </button>
+          </form>
+        </div>
       </div>
     </header>
     <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
