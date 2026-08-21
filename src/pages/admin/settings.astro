@@ -48,6 +48,11 @@ const saved = Astro.url.searchParams.get("saved");
           class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
       </label>
       <label class="block">
+        <span class="text-sm font-medium text-muted">Nickname (shows in header)</span>
+        <input type="text" name="nickname" value={settings.nickname ?? ""} placeholder="e.g. your handle"
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
         <span class="text-sm font-medium text-muted">Role / title</span>
         <input type="text" name="role" value={settings.role ?? ""}
           class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />

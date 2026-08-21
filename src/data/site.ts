@@ -1,5 +1,6 @@
 export interface Site {
   name: string;
+  nickname: string;
   role: string;
   location: string;
   email: string;
@@ -15,6 +16,7 @@ export interface Site {
 
 export const site: Site = {
   name: "Alex Chen",
+  nickname: "",
   role: "Full-Stack Engineer",
   location: "San Francisco, CA",
   email: "hello@example.com",
@@ -30,6 +32,7 @@ export const site: Site = {
 
 export const SETTING_KEYS = [
   "name",
+  "nickname",
   "role",
   "location",
   "email",
@@ -47,6 +50,7 @@ export function resolveSite(settings?: Record<string, string>): Site {
   const s = settings ?? {};
   return {
     name: s.name || site.name,
+    nickname: s.nickname || site.nickname,
     role: s.role || site.role,
     location: s.location || site.location,
     email: s.email || site.email,

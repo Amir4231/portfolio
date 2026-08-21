@@ -13,6 +13,7 @@ export const POST: APIRoute = async ({ request }) => {
   const values: Record<string, string> = {};
   for (const key of [
     "name",
+    "nickname",
     "role",
     "location",
     "email",
