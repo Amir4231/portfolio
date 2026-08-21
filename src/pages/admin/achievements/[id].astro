@@ -1,0 +1,126 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getAchievement } from "../../../lib/db";
+
+const id = Astro.params.id ?? "new";
+const isNew = id === "new";
+const achievement = isNew ? null : await getAchievement(id);
+
+const CATEGORIES = ["Certification", "Award", "Impact Metric", "Speaking"];
+---
+
+<AdminLayout title={isNew ? "New achievement" : "Edit achievement"}>
+  <a href="/admin" class="text-sm text-muted transition hover:text-ink">
+    ← Back to admin
+  </a>
+
+  <h1 class="mt-4 font-serif text-2xl font-semibold text-ink">
+    {isNew ? "New achievement" : "Edit achievement"}
+  </h1>
+
+  {!isNew && !achievement && (
+    <p class="mt-4 text-sm text-accent">Achievement not found.</p>
+  )}
+
+  <form method="post" action="/api/achievements" class="mt-6 space-y-5">
+    <input type="hidden" name="action" value={isNew ? "create" : "update"} />
+    {!isNew && <input type="hidden" name="id" value={id} />}
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Title *</span>
+      <input
+        type="text"
+        name="title"
+        required
+        value={achievement?.title ?? ""}
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+      />
+    </label>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Category</span>
+        <select
+          name="category"
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        >
+          {CATEGORIES.map((c) => (
+            <option value={c} selected={(achievement?.category ?? c) === c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Date</span>
+        <input
+          type="text"
+          name="date"
+          placeholder="March 2024"
+          value={achievement?.date ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Issuer / context</span>
+      <input
+        type="text"
+        name="issuer"
+        placeholder="Amazon Web Services"
+        value={achievement?.issuer ?? ""}
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+      />
+    </label>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Description</span>
+      <textarea
+        name="description"
+        rows="3"
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none">{achievement?.description ?? ""}</textarea>
+    </label>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">
+          Highlight metric (optional)
+        </span>
+        <input
+          type="text"
+          name="highlightMetric"
+          placeholder="+300%, #1 / 500"
+          value={achievement?.highlightMetric ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">
+          Credential URL (optional)
+        </span>
+        <input
+          type="url"
+          name="credentialUrl"
+          value={achievement?.credentialUrl ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Notes (optional Markdown)</span>
+      <textarea
+        name="body"
+        rows="6"
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 font-mono text-xs leading-relaxed text-ink focus:border-accent focus:outline-none">{achievement?.body ?? ""}</textarea>
+    </label>
+
+    <button
+      type="submit"
+      class="rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90"
+    >
+      {isNew ? "Create achievement" : "Save changes"}
+    </button>
+  </form>
+</AdminLayout>

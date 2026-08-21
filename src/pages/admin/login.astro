@@ -1,0 +1,39 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+const error = Astro.url.searchParams.get("error");
+---
+
+<AdminLayout title="Admin login">
+  <div class="mx-auto max-w-sm pt-10">
+    <h1 class="font-serif text-2xl font-semibold text-ink">Admin login</h1>
+    <p class="mt-2 text-sm text-muted">
+      Enter the admin password to manage your content.
+    </p>
+
+    {error && (
+      <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+        Wrong password. Try again.
+      </p>
+    )}
+
+    <form method="post" action="/api/login" class="mt-6 space-y-4">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Password</span>
+        <input
+          type="password"
+          name="password"
+          required
+          autocomplete="current-password"
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+      <button
+        type="submit"
+        class="w-full rounded-sm bg-accent px-4 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90"
+      >
+        Sign in
+      </button>
+    </form>
+  </div>
+</AdminLayout>

@@ -1,0 +1,43 @@
+---
+title: "ShipMate — Real-Time Logistics Dashboard"
+description: "A real-time shipment tracking platform with live map updates, predictive ETAs, and role-based dashboards for shippers, carriers, and end customers."
+pubDate: 2024-11-15
+tags: ["TypeScript", "Next.js", "PostgreSQL", "WebSockets", "tRPC"]
+heroImage: "shipmate.png"
+githubUrl: "https://github.com/your-username/shipmate"
+liveUrl: "https://shipmate.example.com"
+featured: true
+---
+
+## The Problem
+
+A logistics client's shipment tracking relied on polling a legacy REST API every 60 seconds. Customers saw stale locations, dispatchers worked from conflicting data, and support tickets about "where is my package" consumed 30% of the team's time.
+
+## The Architecture & Tech Stack
+
+I designed a real-time system around **Next.js (App Router)**, **tRPC** for end-to-end type safety, **PostgreSQL** with PostGIS for geospatial queries, and **WebSockets** for pushing live position updates to the browser.
+
+```ts
+export async function getShipment(id: string) {
+  const cached = await cache.get("shipment:" + id);
+  if (cached) return cached;
+
+  const shipment = await db.shipment.findUnique({
+    where: { id },
+    include: { events: true },
+  });
+
+  await cache.set("shipment:" + id, shipment, { ttl: 30 });
+  return shipment;
+}
+```
+
+## Key Challenges & Solutions
+
+- **Message ordering**: GPS pings arrived out of order. I assigned each event a monotonic sequence number and deduplicated in a Redis-backed buffer before fan-out.
+- **Scale**: A naive broadcast would overwhelm the fleet. I sharded subscriptions by region and coalesced updates to 1Hz per vehicle.
+- **Type safety across the wire**: tRPC gave the client and server a single source of truth, eliminating an entire class of runtime parsing bugs.
+
+## Impact & Metrics
+
+Live ETAs are now accurate to within two minutes, support tickets dropped 42%, and the dashboard renders its first meaningful paint in under 1.2 seconds on a mid-range device.

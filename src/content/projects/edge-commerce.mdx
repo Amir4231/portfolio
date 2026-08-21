@@ -1,0 +1,40 @@
+---
+title: "EdgeCommerce — Edge-Rendered Storefront"
+description: "A headless storefront rendered at the edge with sub-100ms TTFB, dynamic personalization, and a checkout conversion rate 38% above the client's previous site."
+pubDate: 2024-06-03
+tags: ["Next.js", "Edge Functions", "Shopify", "Tailwind CSS", "Redis"]
+heroImage: "edge-commerce.png"
+githubUrl: "https://github.com/your-username/edge-commerce"
+liveUrl: "https://edge-commerce.example.com"
+featured: true
+---
+
+## The Problem
+
+An e-commerce brand on a monolithic theme was losing mobile shoppers to slow page loads — 4.6 seconds to interactive, a 70% bounce rate on product pages, and no path to run A/B tests without a full deploy.
+
+## The Architecture & Tech Stack
+
+I rebuilt the storefront as a **headless Next.js** app deployed to Vercel's edge network, with **Shopify Storefront API** as the commerce backend and **Redis** for personalization flags and feature rollout.
+
+```ts
+export function middleware(req: NextRequest) {
+  const geo = req.geo?.country ?? "US";
+  const url = req.nextUrl.clone();
+
+  url.searchParams.set("region", geo);
+  url.headers.set("x-region", geo);
+
+  return NextResponse.rewrite(url);
+}
+```
+
+## Key Challenges & Solutions
+
+- **Cache invalidation**: Product and cart data changed frequently. I keyed caches by resource + variant and used tag-based purging so a price change propagated globally in under a second.
+- **Personalization without layout shift**: Recommendation blocks are pre-rendered with reserved aspect ratios, so injecting personalized content never causes a visible jump.
+- **A/B testing at the edge**: Experiment assignment happens in middleware, so variants are served without a client-side flash.
+
+## Impact & Metrics
+
+Time to interactive fell from 4.6s to 0.9s, bounce rate dropped to 31%, and checkout conversion improved 38% within the first quarter.

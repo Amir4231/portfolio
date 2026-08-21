@@ -1,0 +1,129 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getProject } from "../../../lib/db";
+
+const id = Astro.params.id ?? "new";
+const isNew = id === "new";
+const project = isNew ? null : await getProject(id);
+---
+
+<AdminLayout title={isNew ? "New project" : "Edit project"}>
+  <a href="/admin" class="text-sm text-muted transition hover:text-ink">
+    ← Back to admin
+  </a>
+
+  <h1 class="mt-4 font-serif text-2xl font-semibold text-ink">
+    {isNew ? "New project" : "Edit project"}
+  </h1>
+
+  {!isNew && !project && (
+    <p class="mt-4 text-sm text-accent">Project not found.</p>
+  )}
+
+  <form method="post" action="/api/projects" class="mt-6 space-y-5">
+    <input type="hidden" name="action" value={isNew ? "create" : "update"} />
+    {!isNew && <input type="hidden" name="id" value={id} />}
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Title *</span>
+      <input
+        type="text"
+        name="title"
+        required
+        value={project?.title ?? ""}
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+      />
+    </label>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Short description</span>
+      <textarea
+        name="description"
+        rows="2"
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none">{project?.description ?? ""}</textarea>
+    </label>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Publish date</span>
+        <input
+          type="date"
+          name="pubDate"
+          value={project?.pubDate ?? new Date().toISOString().slice(0, 10)}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Tags (comma separated)</span>
+        <input
+          type="text"
+          name="tags"
+          placeholder="TypeScript, Astro"
+          value={project?.tags.join(", ") ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">
+        Hero image URL or filename
+      </span>
+      <input
+        type="text"
+        name="heroImage"
+        placeholder="https://... or shipmate.png"
+        value={project?.heroImage ?? ""}
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+      />
+    </label>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm font-medium text-muted">GitHub URL</span>
+        <input
+          type="url"
+          name="githubUrl"
+          value={project?.githubUrl ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">Live URL (optional)</span>
+        <input
+          type="url"
+          name="liveUrl"
+          value={project?.liveUrl ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none"
+        />
+      </label>
+    </div>
+
+    <label class="flex items-center gap-2">
+      <input
+        type="checkbox"
+        name="featured"
+        checked={project?.featured ?? false}
+        class="size-4 accent-[var(--color-accent)]"
+      />
+      <span class="text-sm text-muted">Featured on the home page</span>
+    </label>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">
+        Case study (Markdown — use ## for section headings)
+      </span>
+      <textarea
+        name="body"
+        rows="14"
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 font-mono text-xs leading-relaxed text-ink focus:border-accent focus:outline-none">{project?.body ?? ""}</textarea>
+    </label>
+
+    <button
+      type="submit"
+      class="rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90"
+    >
+      {isNew ? "Create project" : "Save changes"}
+    </button>
+  </form>
+</AdminLayout>

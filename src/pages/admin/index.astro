@@ -1,0 +1,104 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { listAchievements, listProjects } from "../../lib/db";
+
+const projects = await listProjects();
+const achievements = await listAchievements();
+
+const error = Astro.url.searchParams.get("error");
+---
+
+<AdminLayout title="Admin — content">
+  <h1 class="font-serif text-3xl font-semibold text-ink">Content</h1>
+  <p class="mt-2 text-sm text-muted">
+    Add, edit, or remove what appears on your site. Changes go live immediately.
+  </p>
+
+  {error === "title" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      A title is required.
+    </p>
+  )}
+
+  <section class="mt-10">
+    <div class="flex items-center justify-between gap-4">
+      <h2 class="font-serif text-xl font-semibold text-ink">Projects</h2>
+      <a
+        href="/admin/projects/new"
+        class="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-surface transition hover:opacity-90"
+      >
+        + Add project
+      </a>
+    </div>
+    <ul class="mt-4 divide-y divide-line border-y border-line">
+      {projects.length === 0 && (
+        <li class="py-4 text-sm text-faint">No projects yet.</li>
+      )}
+      {projects.map((p) => (
+        <li class="flex items-center justify-between gap-4 py-3">
+          <div class="min-w-0">
+            <a
+              href={`/admin/projects/${p.id}`}
+              class="font-medium text-ink transition hover:text-accent"
+            >
+              {p.title}
+            </a>
+            <span class="ml-2 text-xs text-faint">
+              {p.pubDate}{p.featured ? " · featured" : ""}
+            </span>
+          </div>
+          <form method="post" action="/api/projects">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="id" value={p.id} />
+            <button
+              type="submit"
+              class="text-xs text-faint transition hover:text-accent"
+            >
+              Delete
+            </button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="mt-12">
+    <div class="flex items-center justify-between gap-4">
+      <h2 class="font-serif text-xl font-semibold text-ink">Achievements</h2>
+      <a
+        href="/admin/achievements/new"
+        class="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-surface transition hover:opacity-90"
+      >
+        + Add achievement
+      </a>
+    </div>
+    <ul class="mt-4 divide-y divide-line border-y border-line">
+      {achievements.length === 0 && (
+        <li class="py-4 text-sm text-faint">No achievements yet.</li>
+      )}
+      {achievements.map((a) => (
+        <li class="flex items-center justify-between gap-4 py-3">
+          <div class="min-w-0">
+            <a
+              href={`/admin/achievements/${a.id}`}
+              class="font-medium text-ink transition hover:text-accent"
+            >
+              {a.title}
+            </a>
+            <span class="ml-2 text-xs text-faint">{a.category} · {a.date}</span>
+          </div>
+          <form method="post" action="/api/achievements">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="id" value={a.id} />
+            <button
+              type="submit"
+              class="text-xs text-faint transition hover:text-accent"
+            >
+              Delete
+            </button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  </section>
+</AdminLayout>

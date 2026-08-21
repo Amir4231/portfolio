@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
+import { ArrowLeft } from "@lucide/astro";
+import { listProjects } from "../../lib/db";
+
+const projects = (await listProjects()).sort((a, b) =>
+  b.pubDate.localeCompare(a.pubDate),
+);
+---
+
+<BaseLayout
+  title="Projects"
+  description="Case studies of projects I've designed and built."
+>
+  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+    <a
+      href="/"
+      class="link-sweep inline-flex items-center gap-1.5 text-sm font-medium text-muted"
+    >
+      <ArrowLeft class="size-4" />
+      Back home
+    </a>
+    <div class="mt-8">
+      <SectionHeading
+        title="All projects"
+        description="Every project, in reverse-chronological order."
+      />
+    </div>
+    <div class="mt-10 border-b border-line">
+      {projects.map((project, i) => (
+        <ProjectCard project={project} delay={i * 0.04} />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

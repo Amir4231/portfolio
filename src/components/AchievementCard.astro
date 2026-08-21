@@ -1,0 +1,50 @@
+---
+import type { Achievement } from "../lib/types";
+import { ArrowUpRight } from "@lucide/astro";
+
+interface Props {
+  achievement: Achievement;
+  delay?: number;
+}
+
+const { achievement, delay = 0 } = Astro.props;
+---
+
+<article class="border-t border-line" data-reveal data-reveal-delay={delay}>
+  <div class="py-6 sm:py-7">
+    <div class="flex items-baseline justify-between gap-4">
+      <span class="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
+        {achievement.category}
+      </span>
+      <span class="text-xs text-faint">{achievement.date}</span>
+    </div>
+
+    <h3 class="mt-2.5 font-serif text-lg font-semibold text-ink">
+      {achievement.title}
+    </h3>
+    <p class="text-sm text-faint">{achievement.issuer}</p>
+
+    <p class="mt-2.5 max-w-2xl text-sm leading-relaxed text-muted">
+      {achievement.description}
+    </p>
+
+    <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+      {achievement.highlightMetric && (
+        <span class="font-mono font-medium text-accent">
+          {achievement.highlightMetric}
+        </span>
+      )}
+      {achievement.credentialUrl && (
+        <a
+          href={achievement.credentialUrl}
+          rel="noopener noreferrer"
+          target="_blank"
+          class="inline-flex items-center gap-1 text-xs text-faint transition hover:text-accent"
+        >
+          Verify
+          <ArrowUpRight class="size-3.5" />
+        </a>
+      )}
+    </div>
+  </div>
+</article>

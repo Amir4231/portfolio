@@ -1,0 +1,67 @@
+---
+import type { Project } from "../lib/types";
+import { ArrowUpRight } from "@lucide/astro";
+
+interface Props {
+  project: Project;
+  delay?: number;
+}
+
+const { project, delay = 0 } = Astro.props;
+const year = project.pubDate ? new Date(project.pubDate).getFullYear() : "";
+---
+
+<article class="border-t border-line" data-reveal data-reveal-delay={delay}>
+  <div class="group flex items-start gap-5 py-6 sm:gap-8 sm:py-7">
+    <span class="mt-2 w-12 shrink-0 font-mono text-xs text-faint">
+      {year}
+    </span>
+
+    <div class="min-w-0 flex-1">
+      <h3 class="font-serif text-xl font-semibold text-ink sm:text-2xl">
+        <a
+          href={`/projects/${project.id}/`}
+          class="transition hover:text-accent"
+        >
+          {project.title}
+        </a>
+      </h3>
+      <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
+        {project.description}
+      </p>
+      <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
+        {project.tags.length > 0 && (
+          <span class="text-faint">{project.tags.join(" · ")}</span>
+        )}
+        {project.githubUrl && (
+          <a
+            href={project.githubUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+            class="text-muted transition hover:text-accent"
+          >
+            Code ↗
+          </a>
+        )}
+        {project.liveUrl && (
+          <a
+            href={project.liveUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+            class="text-muted transition hover:text-accent"
+          >
+            Live ↗
+          </a>
+        )}
+      </div>
+    </div>
+
+    <a
+      href={`/projects/${project.id}/`}
+      aria-label={`${project.title} — case study`}
+      class="mt-1.5 shrink-0 text-faint transition group-hover:text-accent"
+    >
+      <ArrowUpRight class="size-5" />
+    </a>
+  </div>
+</article>

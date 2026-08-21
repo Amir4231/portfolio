@@ -1,0 +1,40 @@
+---
+title: "CollabBoard — Multiplayer Whiteboard"
+description: "A real-time collaborative whiteboard with CRDT-based sync, offline persistence, and 100+ concurrent cursors at 60fps."
+pubDate: 2023-09-20
+tags: ["TypeScript", "React", "CRDTs", "WebRTC", "Node.js"]
+heroImage: "realtime-collab.png"
+githubUrl: "https://github.com/your-username/collabboard"
+liveUrl: "https://collabboard.example.com"
+featured: false
+---
+
+## The Problem
+
+A design team needed a whiteboard that worked reliably over flaky conference Wi-Fi. Their existing tool lost strokes on reconnect and became unusable past ~10 concurrent editors.
+
+## The Architecture & Tech Stack
+
+I built CollabBoard on **React** with a **Yjs** CRDT for conflict-free state, a **WebRTC** data channel for peer-to-peer presence, and a **Node.js** relay for offline replay and audit history.
+
+```ts
+export function joinSession(room: string, user: User) {
+  const doc = new Y.Doc();
+  const awareness = new Awareness(doc);
+
+  awareness.setLocalState({ user });
+
+  const provider = new WebrtcProvider(room, doc);
+  return { doc, awareness, provider };
+}
+```
+
+## Key Challenges & Solutions
+
+- **Conflict-free editing**: The CRDT guarantees every client converges to the same state regardless of network order, so strokes are never lost.
+- **Presence bandwidth**: I throttled cursor broadcasts to 20Hz and interpolated locally, keeping remote cursors smooth at 60fps without saturating the channel.
+- **Offline replay**: Local edits are journaled to IndexedDB and replayed on reconnect with a deterministic merge.
+
+## Impact & Metrics
+
+CollabBoard supports 100+ concurrent cursors at 60fps and survived a live demo where 30 devices were forced offline and back without a single lost stroke.

@@ -1,0 +1,48 @@
+---
+import { codeToHtml } from "shiki";
+
+interface Props {
+  code: string;
+  lang?: string;
+  filename?: string;
+}
+
+const { code, lang = "ts", filename = "index.ts" } = Astro.props;
+
+const html = await codeToHtml(code.trim(), {
+  lang,
+  theme: "github-dark",
+});
+---
+
+<figure class="my-6 overflow-hidden rounded-sm border border-line bg-raised">
+  <figcaption
+    class="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5"
+  >
+    <div class="flex items-center gap-2">
+      <span class="flex gap-1.5" aria-hidden="true">
+        <span class="size-3 rounded-full bg-red-500/70"></span>
+        <span class="size-3 rounded-full bg-amber-500/70"></span>
+        <span class="size-3 rounded-full bg-emerald-500/70"></span>
+      </span>
+      <span class="ml-2 font-mono text-xs text-faint">{filename}</span>
+    </div>
+    <span
+      class="font-mono text-[10px] uppercase tracking-wider text-faint"
+    >
+      {lang}
+    </span>
+  </figcaption>
+  <div
+    set:html={html}
+    class="code-preview overflow-x-auto p-4 text-sm leading-relaxed"
+  />
+</figure>
+
+<style>
+  .code-preview :global(.shiki) {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+</style>

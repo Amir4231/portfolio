@@ -1,0 +1,73 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import AchievementCard from "../components/AchievementCard.astro";
+import TechStack from "../components/TechStack.astro";
+import Contact from "../components/Contact.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import { ArrowRight } from "@lucide/astro";
+import { listAchievements, listProjects } from "../lib/db";
+
+const projects = (await listProjects()).sort((a, b) =>
+  b.pubDate.localeCompare(a.pubDate),
+);
+const featured = projects.filter((p) => p.featured);
+
+const yearOf = (s: string) => Number(s.match(/\d{4}/)?.[0] ?? 0);
+const achievements = (await listAchievements()).sort(
+  (a, b) => yearOf(b.date) - yearOf(a.date),
+);
+---
+
+<BaseLayout>
+  <Hero />
+
+  <section id="projects" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 sm:py-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <SectionHeading
+        title="Selected work"
+        description="A few things I've designed, built, and shipped."
+      />
+      <a
+        href="/projects/"
+        class="link-sweep inline-flex items-center gap-1.5 pb-1 text-sm font-semibold text-ink"
+        data-reveal
+      >
+        All projects
+        <ArrowRight class="size-4" />
+      </a>
+    </div>
+    <div class="mt-10 border-b border-line">
+      {featured.map((project, i) => (
+        <ProjectCard project={project} delay={i * 0.05} />
+      ))}
+    </div>
+  </section>
+
+  <section id="achievements" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 sm:py-20">
+    <SectionHeading
+      title="Milestones"
+      description="Certifications, awards, and measurable outcomes."
+    />
+    <div class="mt-10 border-b border-line">
+      {achievements.map((achievement, i) => (
+        <AchievementCard achievement={achievement} delay={i * 0.05} />
+      ))}
+    </div>
+  </section>
+
+  <section id="skills" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 sm:py-20">
+    <SectionHeading
+      title="Stack"
+      description="The tools I reach for to ship fast, reliable software."
+    />
+    <div class="mt-12">
+      <TechStack />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+    <Contact />
+  </section>
+</BaseLayout>

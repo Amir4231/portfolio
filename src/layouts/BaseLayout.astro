@@ -1,0 +1,141 @@
+---
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { site } from "../data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${site.name} — ${site.role}`,
+  description = site.tagline,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL("/og.png", Astro.site).toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0e0c0a" />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add("js");
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          d.classList.add("no-motion");
+        }
+        try {
+          var t = localStorage.getItem("theme");
+          d.classList.toggle("dark", t !== "light");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="flex min-h-screen flex-col bg-surface text-ink">
+    <!--
+      THESIS: An engineer's portfolio as a printed index — a table of works, not a slide deck.
+      It refuses the card-grid + gradient-blob + stat-counter template.
+      OWN-WORLD: Warm near-black paper (#0e0c0a) and one hot vermilion accent (#ff5a3c);
+      Gelasio serif for display, Archivo for text, JetBrains Mono for code and data.
+      Hairline rules instead of boxes; text where others use pills.
+      STORY: A visitor reads the name, trusts the craft from the typography, and walks the
+      work as a numbered index of what was built and why it mattered.
+      FIRST VIEWPORT: Oversized serif name with role on one line, a single statement sentence,
+      one accent "View selected work" action, and a quiet contact/social row beneath a rule.
+      FORM: Editorial index — serif display, hairline-led list entries, vermilion as the only color.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review,
+      the verdict, and DESIGN.md.
+    -->
+    <Header />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <ClientRouter />
+
+    <script>
+      import Lenis from "lenis";
+      import gsap from "gsap";
+
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      let lenis: Lenis | null = null;
+      if (!reduced) {
+        lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+        const raf = (time: number) => {
+          lenis?.raf(time);
+          requestAnimationFrame(raf);
+        };
+        requestAnimationFrame(raf);
+      }
+
+      let revealIO: IntersectionObserver | null = null;
+      function initReveal() {
+        if (reduced) {
+          document
+            .querySelectorAll("[data-reveal]")
+            .forEach((el) => el.classList.add("is-visible"));
+          return;
+        }
+        if (revealIO) revealIO.disconnect();
+        const els = document.querySelectorAll(
+          "[data-reveal]:not(.is-visible)",
+        );
+        if (!els.length) return;
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const el = entry.target as HTMLElement;
+              if (
+                !entry.isIntersecting &&
+                entry.boundingClientRect.top >= 0
+              ) {
+                return;
+              }
+              io.unobserve(el);
+              el.classList.add("is-visible");
+              gsap.fromTo(
+                el,
+                { autoAlpha: 0, y: 20 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  duration: 0.7,
+                  ease: "power3.out",
+                  delay: parseFloat(el.dataset.revealDelay ?? "0"),
+                },
+              );
+            });
+          },
+          { threshold: 0.1 },
+        );
+        revealIO = io;
+        els.forEach((el) => io.observe(el));
+      }
+
+      document.addEventListener("astro:page-load", initReveal);
+      initReveal();
+    </script>
+  </body>
+</html>
