@@ -41,10 +41,28 @@ CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL DEFAULT ''
 );
+CREATE TABLE IF NOT EXISTS rate_limits (
+  bucket TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  reset_at INTEGER NOT NULL
+);
 `;
 
 export async function initSchema(): Promise<void> {
   await db.executeMultiple(SCHEMA);
+}
+
+let readyPromise: Promise<void> | null = null;
+
+/** Run schema init exactly once per process, then memoize. */
+export function ensureReady(): Promise<void> {
+  if (!readyPromise) {
+    readyPromise = initSchema().catch((err) => {
+      readyPromise = null;
+      throw err;
+    });
+  }
+  return readyPromise;
 }
 
 function slugify(title: string): string {

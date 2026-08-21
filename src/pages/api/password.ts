@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request }) => {
   const settings = await getSettings();
   const hash = settings["password_hash"] || undefined;
 
-  if (!hash || !verifyPassword(current, hash)) {
+  if (!hash || !(await verifyPassword(current, hash))) {
     return new Response(null, {
       status: 303,
       headers: { Location: "/admin/settings?error=password" },
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  await saveSettings({ password_hash: hashPassword(next) });
+  await saveSettings({ password_hash: await hashPassword(next) });
 
   return new Response(null, {
     status: 303,

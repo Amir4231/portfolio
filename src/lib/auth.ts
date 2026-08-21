@@ -1,18 +1,29 @@
 import crypto from "node:crypto";
 
-export function hashPassword(password: string): string {
+const scryptAsync = (password: string, salt: string, keylen: number) =>
+  new Promise<Buffer>((resolve, reject) => {
+    crypto.scrypt(password, salt, keylen, (err, derived) => {
+      if (err) reject(err);
+      else resolve(derived);
+    });
+  });
+
+export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+  const hash = (await scryptAsync(password, salt, 64)).toString("hex");
   return `scrypt:${salt}:${hash}`;
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
+export async function verifyPassword(
+  password: string,
+  stored: string,
+): Promise<boolean> {
   if (!stored || !stored.startsWith("scrypt:")) return false;
   const [, salt, hash] = stored.split(":");
   if (!salt || !hash) return false;
-  const candidate = crypto.scryptSync(password, salt, 64).toString("hex");
+  const candidate = await scryptAsync(password, salt, 64);
   const a = Buffer.from(candidate);
-  const b = Buffer.from(hash);
+  const b = Buffer.from(hash, "hex");
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
