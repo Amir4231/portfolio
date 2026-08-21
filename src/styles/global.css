@@ -101,6 +101,73 @@
   }
 }
 
+/* Hero code ambience — faint scrolling code on the right edge */
+.hero-code {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 17rem;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0, 0, 0, 0.7) 12%,
+    rgba(0, 0, 0, 0.45) 50%,
+    rgba(0, 0, 0, 0.7) 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0, 0, 0, 0.7) 12%,
+    rgba(0, 0, 0, 0.45) 50%,
+    rgba(0, 0, 0, 0.7) 88%,
+    transparent 100%
+  );
+}
+
+.hero-code__track {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  white-space: pre;
+  color: var(--color-faint);
+  animation: hero-code-scroll 48s linear infinite;
+  will-change: transform;
+}
+
+.hero-code__track code {
+  flex: 0 0 auto;
+}
+
+.no-motion .hero-code__track {
+  animation: none;
+}
+
+@keyframes hero-code-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.hero-code__cursor {
+  position: absolute;
+  left: 1rem;
+  bottom: 14%;
+  width: 0.5rem;
+  height: 1.05rem;
+  border-radius: 1px;
+  background: var(--color-accent);
+  opacity: 0.7;
+}
+
 /* Scroll reveal — initial hidden state; JS animates it in on scroll */
 .js:not(.no-motion) [data-reveal] {
   opacity: 0;

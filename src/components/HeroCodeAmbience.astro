@@ -1,0 +1,31 @@
+---
+const lines = `// services/project.ts
+import { db } from "./db";
+
+export async function getProject(slug: string) {
+  const row = await db.project.findUnique({
+    where: { slug },
+    include: { stack: true },
+  });
+
+  if (!row) throw new Error("not found");
+
+  return {
+    id: row.id,
+    title: row.title,
+    ...row,
+  };
+}
+
+export function cn(...parts: (string | false)[]) {
+  return parts.filter(Boolean).join(" ");
+}`;
+---
+
+<div class="hero-code" aria-hidden="true">
+  <pre class="hero-code__track">
+    <code>{lines}</code>
+    <code>{lines}</code>
+  </pre>
+  <span class="hero-code__cursor"></span>
+</div>
