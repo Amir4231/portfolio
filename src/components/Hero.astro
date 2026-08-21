@@ -1,15 +1,21 @@
 ---
 import { resolveSite } from "../data/site";
-import { ArrowRight } from "@lucide/astro";
+import { ArrowRight, Mail } from "@lucide/astro";
+import GithubIcon from "./icons/GithubIcon.astro";
+import LinkedinIcon from "./icons/LinkedinIcon.astro";
+import XIcon from "./icons/XIcon.astro";
+import WhatsAppIcon from "./icons/WhatsAppIcon.astro";
 
 const site = resolveSite(Astro.locals.settings);
 
-const links = [
-  { href: `mailto:${site.email}`, label: site.email },
-  { href: site.github, label: "GitHub" },
-  { href: site.linkedin, label: "LinkedIn" },
-  { href: site.twitter, label: "X" },
+const socials = [
+  { href: site.github, label: "GitHub", icon: GithubIcon },
+  { href: site.linkedin, label: "LinkedIn", icon: LinkedinIcon },
+  { href: site.twitter, label: "X", icon: XIcon },
 ];
+if (site.whatsapp) {
+  socials.push({ href: site.whatsapp, label: "WhatsApp", icon: WhatsAppIcon });
+}
 ---
 
 <section>
@@ -72,17 +78,26 @@ const links = [
       data-reveal
       data-reveal-delay="0.2"
     >
-      {links.map((link) => (
-        <a
-          href={link.href}
-          class="text-faint transition hover:text-ink"
-          {...(link.href.startsWith("http")
-            ? { rel: "noopener noreferrer", target: "_blank" }
-            : {})}
-        >
-          {link.label}
-        </a>
-      ))}
+      <a
+        href={`mailto:${site.email}`}
+        class="flex items-center gap-2 text-faint transition hover:text-ink"
+      >
+        <Mail class="size-4" />
+        {site.email}
+      </a>
+      <div class="flex items-center gap-1.5">
+        {socials.map(({ href, label, icon: Icon }) => (
+          <a
+            href={href}
+            aria-label={label}
+            rel="noopener noreferrer"
+            target="_blank"
+            class="inline-flex size-9 items-center justify-center rounded-md text-faint transition hover:bg-line/60 hover:text-ink"
+          >
+            <Icon class="size-[18px]" />
+          </a>
+        ))}
+      </div>
     </div>
   </div>
 </section>

@@ -6,6 +6,7 @@ export interface Site {
   github: string;
   linkedin: string;
   twitter: string;
+  whatsapp: string;
   resume: string;
   tagline: string;
   builtWith: string;
@@ -20,6 +21,7 @@ export const site: Site = {
   github: "https://github.com/your-username",
   linkedin: "https://www.linkedin.com/in/your-username",
   twitter: "https://twitter.com/your-username",
+  whatsapp: "",
   resume: "/resume.pdf",
   tagline:
     "Full-stack engineer with 6+ years shipping production TypeScript, React, and Node.js applications. I obsess over performance, accessibility, and developer experience — turning complex problems into fast, elegant products.",
@@ -34,6 +36,7 @@ export const SETTING_KEYS = [
   "github",
   "linkedin",
   "twitter",
+  "whatsapp",
   "resume",
   "tagline",
   "builtWith",
@@ -50,6 +53,7 @@ export function resolveSite(settings?: Record<string, string>): Site {
     github: s.github || site.github,
     linkedin: s.linkedin || site.linkedin,
     twitter: s.twitter || site.twitter,
+    whatsapp: s.whatsapp || site.whatsapp,
     resume: s.resume || site.resume,
     tagline: s.tagline || site.tagline,
     builtWith: s.builtWith || site.builtWith,

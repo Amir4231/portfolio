@@ -73,7 +73,7 @@ const saved = Astro.url.searchParams.get("saved");
       </label>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-3">
+    <div class="grid gap-5 sm:grid-cols-2">
       <label class="block">
         <span class="text-sm font-medium text-muted">GitHub</span>
         <input type="url" name="github" value={settings.github ?? ""}
@@ -87,6 +87,11 @@ const saved = Astro.url.searchParams.get("saved");
       <label class="block">
         <span class="text-sm font-medium text-muted">X / Twitter</span>
         <input type="url" name="twitter" value={settings.twitter ?? ""}
+          class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-muted">WhatsApp</span>
+        <input type="url" name="whatsapp" value={settings.whatsapp ?? ""} placeholder="https://wa.me/60123456789"
           class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 text-ink focus:border-accent focus:outline-none" />
       </label>
     </div>

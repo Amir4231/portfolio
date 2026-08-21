@@ -26,9 +26,19 @@ const formattedDate = pubDate
     })
   : "";
 const html = renderMarkdown(body);
+const heroImageSrc = image
+  ? new URL(image.src, Astro.url.origin).toString()
+  : external
+    ? heroImage
+    : "";
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  image={heroImageSrc || undefined}
+  type="article"
+>
   <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
     <a
       href="/projects/"

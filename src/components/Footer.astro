@@ -4,6 +4,7 @@ import { MapPin } from "@lucide/astro";
 import GithubIcon from "./icons/GithubIcon.astro";
 import LinkedinIcon from "./icons/LinkedinIcon.astro";
 import XIcon from "./icons/XIcon.astro";
+import WhatsAppIcon from "./icons/WhatsAppIcon.astro";
 
 const site = resolveSite(Astro.locals.settings);
 
@@ -14,6 +15,9 @@ const socials = [
   { href: site.linkedin, label: "LinkedIn", icon: LinkedinIcon },
   { href: site.twitter, label: "X", icon: XIcon },
 ];
+if (site.whatsapp) {
+  socials.push({ href: site.whatsapp, label: "WhatsApp", icon: WhatsAppIcon });
+}
 ---
 
 <footer class="border-t border-line">

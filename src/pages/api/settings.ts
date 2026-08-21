@@ -19,6 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
     "github",
     "linkedin",
     "twitter",
+    "whatsapp",
     "resume",
     "tagline",
     "builtWith",

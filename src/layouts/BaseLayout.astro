@@ -10,14 +10,20 @@ const site = resolveSite(Astro.locals.settings);
 interface Props {
   title?: string;
   description?: string;
+  image?: string;
+  type?: string;
 }
 
 const {
   title = `${site.name} — ${site.role}`,
   description = site.tagline,
+  image = site.avatar || "/og.png",
+  type = "website",
 } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const origin = Astro.url.origin;
+const canonical = new URL(Astro.url.pathname, origin).toString();
+const ogImage = new URL(image, origin).toString();
 ---
 
 <!doctype html>
@@ -28,15 +34,20 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="index, follow" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL("/og.png", Astro.site).toString()} />
+    <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <meta name="theme-color" content="#0e0c0a" />
     <script is:inline>
       (function () {
@@ -47,7 +58,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
         }
         try {
           var t = localStorage.getItem("theme");
-          d.classList.toggle("dark", t !== "light");
+          var dark = t !== "light";
+          d.classList.toggle("dark", dark);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute("content", dark ? "#0e0c0a" : "#f4efe6");
         } catch (e) {}
       })();
     </script>
