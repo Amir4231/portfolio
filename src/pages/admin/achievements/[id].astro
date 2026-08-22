@@ -7,6 +7,8 @@ const isNew = id === "new";
 const achievement = isNew ? null : await getAchievement(id);
 
 const CATEGORIES = ["Certification", "Award", "Impact Metric", "Speaking"];
+
+const error = Astro.url.searchParams.get("error");
 ---
 
 <AdminLayout title={isNew ? "New achievement" : "Edit achievement"}>
@@ -22,7 +24,18 @@ const CATEGORIES = ["Certification", "Award", "Impact Metric", "Speaking"];
     <p class="mt-4 text-sm text-accent">Achievement not found.</p>
   )}
 
-  <form method="post" action="/api/achievements" class="mt-6 space-y-5">
+  {error === "image-size" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      One of the images is too large. Keep each under 5MB.
+    </p>
+  )}
+  {error === "image-invalid" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
+      Couldn't process one of the images. Try a JPG, PNG, or WebP.
+    </p>
+  )}
+
+  <form method="post" action="/api/achievements" enctype="multipart/form-data" class="mt-6 space-y-5">
     <input type="hidden" name="action" value={isNew ? "create" : "update"} />
     {!isNew && <input type="hidden" name="id" value={id} />}
 
@@ -107,6 +120,58 @@ const CATEGORIES = ["Certification", "Award", "Impact Metric", "Speaking"];
         />
       </label>
     </div>
+
+    {achievement && achievement.images.length > 0 && (
+      <div>
+        <span class="text-sm font-medium text-muted">Current images</span>
+        <ul class="mt-2 space-y-2">
+          {achievement.images.map((img, i) => (
+            <li class="flex items-center gap-3 rounded-sm border border-line bg-raised px-3 py-2">
+              <img
+                src={img.src}
+                alt={img.alt || achievement.title}
+                class="size-14 shrink-0 rounded-sm border border-line object-cover"
+              />
+              <span class="min-w-0 flex-1 truncate text-xs text-faint">
+                {img.src.length > 60 ? `${img.src.slice(0, 57)}…` : img.src}
+              </span>
+              <label class="flex shrink-0 items-center gap-1.5 text-xs text-muted">
+                <input
+                  type="checkbox"
+                  name={`removeImage_${i}`}
+                  value="1"
+                  class="size-3.5 accent-[var(--color-accent)]"
+                />
+                Remove
+              </label>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">
+        Upload images (JPG/PNG/WebP, under 5MB each)
+      </span>
+      <input
+        type="file"
+        name="images"
+        accept="image/png,image/jpeg,image/webp"
+        multiple
+        class="mt-1 block w-full text-sm text-muted file:mr-3 file:rounded-sm file:border-0 file:bg-accent file:px-3 file:py-2 file:text-xs file:font-semibold file:text-surface hover:file:opacity-90"
+      />
+    </label>
+
+    <label class="block">
+      <span class="text-sm font-medium text-muted">Image URLs (one per line)</span>
+      <textarea
+        name="imageUrls"
+        rows="3"
+        placeholder="https://…"
+        class="mt-1 w-full rounded-sm border border-line bg-raised px-3 py-2.5 font-mono text-xs leading-relaxed text-ink focus:border-accent focus:outline-none"
+      ></textarea>
+    </label>
 
     <label class="block">
       <span class="text-sm font-medium text-muted">Notes (optional Markdown)</span>

@@ -3,8 +3,10 @@ import { isAuthorized } from "../../lib/auth";
 import {
   createAchievement,
   deleteAchievement,
+  getAchievement,
   updateAchievement,
 } from "../../lib/db";
+import type { AchievementImage } from "../../lib/types";
 
 const CATEGORIES = ["Certification", "Award", "Impact Metric", "Speaking"];
 
@@ -31,7 +33,6 @@ export const POST: APIRoute = async ({ request }) => {
     description: String(form.get("description") ?? "").trim(),
     credentialUrl: String(form.get("credentialUrl") ?? "").trim(),
     highlightMetric: String(form.get("highlightMetric") ?? "").trim(),
-    images: [],
     body: String(form.get("body") ?? ""),
   };
 
@@ -42,10 +43,63 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
+  const errorTarget =
+    action === "update" && id
+      ? `/admin/achievements/${id}?error=`
+      : `/admin/achievements/new?error=`;
+
+  let images: AchievementImage[] = [];
   if (action === "update" && id) {
-    await updateAchievement(id, data);
+    const existing = await getAchievement(id);
+    if (existing) {
+      images = existing.images.filter(
+        (_, i) => String(form.get(`removeImage_${i}`)) !== "1",
+      );
+    }
+  }
+
+  const urlLines = String(form.get("imageUrls") ?? "")
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter((s) => /^https?:\/\//.test(s));
+  for (const url of urlLines) images.push({ src: url, alt: "" });
+
+  const uploads = form
+    .getAll("images")
+    .filter(
+      (entry): entry is File =>
+        typeof (entry as File).arrayBuffer === "function" &&
+        (entry as File).size > 0,
+    );
+
+  const MAX_BYTES = 5 * 1024 * 1024;
+  try {
+    for (const file of uploads) {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      if (bytes.length > MAX_BYTES) throw new Error("size");
+      const sharp = (await import("sharp")).default;
+      const resized = await sharp(bytes)
+        .rotate()
+        .resize(1600, 1600, { fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 82 })
+        .toBuffer();
+      images.push({
+        src: `data:image/jpeg;base64,${resized.toString("base64")}`,
+        alt: data.title,
+      });
+    }
+  } catch (err) {
+    const code = (err as Error).message === "size" ? "image-size" : "image-invalid";
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `${errorTarget}${code}` },
+    });
+  }
+
+  if (action === "update" && id) {
+    await updateAchievement(id, { ...data, images });
   } else {
-    await createAchievement(data);
+    await createAchievement({ ...data, images });
   }
 
   return new Response(null, { status: 303, headers: { Location: "/admin" } });
