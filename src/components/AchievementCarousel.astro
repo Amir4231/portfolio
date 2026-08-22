@@ -93,8 +93,12 @@ const altFor = (img: AchievementImage, idx: number) =>
       });
     }
 
+    let hovered = false;
+    let focused = false;
+
     function start() {
       if (slides.length < 2) return;
+      if (hovered || focused) return;
       stop();
       timer = window.setInterval(() => go(current + 1), 4000);
     }
@@ -107,32 +111,39 @@ const altFor = (img: AchievementImage, idx: number) =>
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    root.addEventListener("mouseenter", stop);
-    root.addEventListener("mouseleave", start);
-    root.addEventListener("focusin", stop);
-    root.addEventListener("focusout", start);
+    root.addEventListener("mouseenter", () => {
+      hovered = true;
+      stop();
+    });
+    root.addEventListener("mouseleave", () => {
+      hovered = false;
+      start();
+    });
+    root.addEventListener("focusin", () => {
+      focused = true;
+      stop();
+    });
+    root.addEventListener("focusout", () => {
+      focused = false;
+      start();
+    });
     prev?.addEventListener("click", () => {
       go(current - 1);
-      start();
     });
     next?.addEventListener("click", () => {
       go(current + 1);
-      start();
     });
     dots.forEach((el, i) => {
       el.addEventListener("click", () => {
         go(i);
-        start();
       });
     });
     root.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") {
         go(current - 1);
-        start();
       }
       if (e.key === "ArrowRight") {
         go(current + 1);
-        start();
       }
     });
 
@@ -269,6 +280,7 @@ const altFor = (img: AchievementImage, idx: number) =>
     gap: 0.4rem;
   }
   .carousel__dots button {
+    position: relative;
     width: 0.5rem;
     height: 0.5rem;
     padding: 0;
@@ -277,14 +289,21 @@ const altFor = (img: AchievementImage, idx: number) =>
     background: transparent;
     cursor: pointer;
   }
+  .carousel__dots button::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
   .carousel__dots button.is-active {
     background: var(--color-gold);
   }
 
-  .no-motion .carousel__slide {
-    transition: none;
-  }
-  .no-motion .carousel__slide.is-active .carousel__corner {
-    animation: none;
+  @media (prefers-reduced-motion: reduce) {
+    .carousel__slide {
+      transition: none;
+    }
+    .carousel__slide.is-active .carousel__corner {
+      animation: none;
+    }
   }
 </style>
