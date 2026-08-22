@@ -11,6 +11,11 @@ export interface Project {
   body: string;
 }
 
+export interface AchievementImage {
+  src: string;
+  alt: string;
+}
+
 export interface Achievement {
   id: string;
   title: string;
@@ -20,5 +25,6 @@ export interface Achievement {
   description: string;
   credentialUrl: string;
   highlightMetric: string;
+  images: AchievementImage[];
   body: string;
 }

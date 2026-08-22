@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS achievements (
   description TEXT NOT NULL DEFAULT '',
   credential_url TEXT NOT NULL DEFAULT '',
   highlight_metric TEXT NOT NULL DEFAULT '',
+  images TEXT NOT NULL DEFAULT '[]',
   body TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

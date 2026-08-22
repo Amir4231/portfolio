@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import type { Achievement, Project } from "./types";
+import type { Achievement, AchievementImage, Project } from "./types";
 
 const url =
   (process.env.TURSO_DATABASE_URL as string | undefined) ??
@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS achievements (
   description TEXT NOT NULL DEFAULT '',
   credential_url TEXT NOT NULL DEFAULT '',
   highlight_metric TEXT NOT NULL DEFAULT '',
+  images TEXT NOT NULL DEFAULT '[]',
   body TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -48,8 +49,21 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 `;
 
+async function ensureAchievementImagesColumn(): Promise<void> {
+  const info = await db.execute("PRAGMA table_info(achievements)");
+  const hasImages = (info.rows as Record<string, unknown>[]).some(
+    (row) => String(row.name) === "images",
+  );
+  if (!hasImages) {
+    await db.execute(
+      "ALTER TABLE achievements ADD COLUMN images TEXT NOT NULL DEFAULT '[]'",
+    );
+  }
+}
+
 export async function initSchema(): Promise<void> {
   await db.executeMultiple(SCHEMA);
+  await ensureAchievementImagesColumn();
 }
 
 let readyPromise: Promise<void> | null = null;
@@ -89,6 +103,21 @@ function rowToProject(row: Record<string, unknown>): Project {
   };
 }
 
+function parseImages(raw: string): AchievementImage[] {
+  try {
+    const parsed = JSON.parse(raw ?? "[]") as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item): item is { src: string; alt?: string } =>
+          !!item && typeof (item as { src?: unknown }).src === "string",
+      )
+      .map((item) => ({ src: String(item.src), alt: String(item.alt ?? "") }));
+  } catch {
+    return [];
+  }
+}
+
 function rowToAchievement(row: Record<string, unknown>): Achievement {
   return {
     id: String(row.id),
@@ -99,6 +128,7 @@ function rowToAchievement(row: Record<string, unknown>): Achievement {
     description: String(row.description ?? ""),
     credentialUrl: String(row.credential_url ?? ""),
     highlightMetric: String(row.highlight_metric ?? ""),
+    images: parseImages(String(row.images ?? "[]")),
     body: String(row.body ?? ""),
   };
 }
@@ -188,8 +218,8 @@ export async function createAchievement(
   let id = slugify(data.title);
   if (await getAchievement(id)) id = `${id}-${Date.now().toString(36)}`;
   await db.execute({
-    sql: `INSERT INTO achievements (id, title, category, date, issuer, description, credential_url, highlight_metric, body)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO achievements (id, title, category, date, issuer, description, credential_url, highlight_metric, images, body)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       data.title,
@@ -199,6 +229,7 @@ export async function createAchievement(
       data.description,
       data.credentialUrl,
       data.highlightMetric,
+      JSON.stringify(data.images),
       data.body,
     ],
   });
@@ -211,7 +242,7 @@ export async function updateAchievement(
 ): Promise<void> {
   await db.execute({
     sql: `UPDATE achievements SET title = ?, category = ?, date = ?, issuer = ?,
-          description = ?, credential_url = ?, highlight_metric = ?, body = ?
+          description = ?, credential_url = ?, highlight_metric = ?, images = ?, body = ?
           WHERE id = ?`,
     args: [
       data.title,
@@ -221,6 +252,7 @@ export async function updateAchievement(
       data.description,
       data.credentialUrl,
       data.highlightMetric,
+      JSON.stringify(data.images),
       data.body,
       id,
     ],

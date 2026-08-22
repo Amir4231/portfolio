@@ -31,6 +31,7 @@ export const POST: APIRoute = async ({ request }) => {
     description: String(form.get("description") ?? "").trim(),
     credentialUrl: String(form.get("credentialUrl") ?? "").trim(),
     highlightMetric: String(form.get("highlightMetric") ?? "").trim(),
+    images: [],
     body: String(form.get("body") ?? ""),
   };
 
