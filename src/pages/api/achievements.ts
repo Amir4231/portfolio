@@ -58,12 +58,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
-  const urlLines = String(form.get("imageUrls") ?? "")
-    .split(/\r?\n/)
-    .map((s) => s.trim())
-    .filter((s) => /^https?:\/\//.test(s));
-  for (const url of urlLines) images.push({ src: url, alt: "" });
-
   const uploads = form
     .getAll("images")
     .filter(
@@ -72,12 +66,12 @@ export const POST: APIRoute = async ({ request }) => {
         (entry as File).size > 0,
     );
 
+  const sharp = (await import("sharp")).default;
   const MAX_BYTES = 5 * 1024 * 1024;
   try {
     for (const file of uploads) {
       const bytes = Buffer.from(await file.arrayBuffer());
       if (bytes.length > MAX_BYTES) throw new Error("size");
-      const sharp = (await import("sharp")).default;
       const resized = await sharp(bytes)
         .rotate()
         .resize(1600, 1600, { fit: "inside", withoutEnlargement: true })
@@ -95,6 +89,12 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { Location: `${errorTarget}${code}` },
     });
   }
+
+  const urlLines = String(form.get("imageUrls") ?? "")
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter((s) => /^https?:\/\//.test(s));
+  for (const url of urlLines) images.push({ src: url, alt: "" });
 
   if (action === "update" && id) {
     await updateAchievement(id, { ...data, images });
