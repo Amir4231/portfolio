@@ -27,6 +27,7 @@
   --color-line: #ddd4c4;
   --color-accent: #ee3f1c;
   --color-accent-soft: rgba(238, 63, 28, 0.1);
+  --color-gold: #c9a227;
 }
 
 .dark {
@@ -38,6 +39,7 @@
   --color-line: #26201a;
   --color-accent: #ff5a3c;
   --color-accent-soft: rgba(255, 90, 60, 0.14);
+  --color-gold: #e2c25d;
 }
 
 @layer base {
