@@ -24,6 +24,9 @@ local.db
 android-mcp.log
 .playwright-mcp/
 
+# git worktrees
+.worktrees/
+
 # macOS-specific files
 .DS_Store
 
