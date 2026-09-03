@@ -1,5 +1,6 @@
 import { createClient } from "@libsql/client";
 import type { Achievement, AchievementImage, Project } from "./types";
+import { skills as defaultSkills } from "../data/skills";
 
 const url =
   (process.env.TURSO_DATABASE_URL as string | undefined) ??
@@ -283,4 +284,36 @@ export async function saveSettings(
     })),
   ]);
   await stmt;
+}
+
+export function sanitizeSkills(input: unknown): Record<string, string[]> | null {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  const out: Record<string, string[]> = {};
+  const entries = Object.entries(input as Record<string, unknown>);
+  if (entries.length === 0 || entries.length > 10) return null;
+  for (const [rawKey, rawVal] of entries) {
+    const key = String(rawKey).trim().slice(0, 30);
+    if (!key || !Array.isArray(rawVal)) return null;
+    const items = (rawVal as unknown[])
+      .map((v) => String(v ?? "").trim())
+      .filter(Boolean)
+      .map((v) => v.slice(0, 60))
+      .slice(0, 30);
+    if (items.length === 0) continue;
+    out[key] = items;
+  }
+  if (Object.keys(out).length === 0) return null;
+  return out;
+}
+
+export async function getSkills(): Promise<Record<string, string[]>> {
+  try {
+    const settings = await getSettings();
+    const raw = settings["skills"];
+    if (!raw) return defaultSkills;
+    const parsed: unknown = JSON.parse(raw);
+    return sanitizeSkills(parsed) ?? defaultSkills;
+  } catch {
+    return defaultSkills;
+  }
 }
