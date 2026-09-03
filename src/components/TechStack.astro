@@ -1,5 +1,11 @@
 ---
-import { skills } from "../data/skills";
+import { skills as fallbackSkills } from "../data/skills";
+
+interface Props {
+  skills?: Record<string, string[]>;
+}
+
+const { skills = fallbackSkills } = Astro.props;
 ---
 
 <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
