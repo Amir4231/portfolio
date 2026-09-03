@@ -140,6 +140,19 @@ for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
   });
 }
 
+const DEFAULT_SKILLS = {
+  Frontend: ["TypeScript", "React", "Next.js", "Astro", "Tailwind CSS", "Vue"],
+  Backend: ["Node.js", "Python", "Go", "PostgreSQL", "Redis", "GraphQL"],
+  DevOps: ["AWS", "Docker", "Kubernetes", "Terraform", "GitHub Actions", "Vercel"],
+  Tools: ["Git", "VS Code", "Figma", "Jest", "Vitest", "Playwright"],
+};
+
+await db.execute({
+  sql: `INSERT OR IGNORE INTO settings (key, value) VALUES ('skills', ?)`,
+  args: [JSON.stringify(DEFAULT_SKILLS)],
+});
+console.log("seeded skills (if missing)");
+
 const existing = await db.execute("SELECT value FROM settings WHERE key = 'password_hash'");
 if (existing.rows.length === 0) {
   const initial = process.env.ADMIN_PASSWORD || "admin";
