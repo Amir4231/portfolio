@@ -4,6 +4,7 @@ import {
   createAchievement,
   deleteAchievement,
   getAchievement,
+  getSettings,
   updateAchievement,
 } from "../../lib/db";
 import type { AchievementImage } from "../../lib/types";
@@ -11,7 +12,9 @@ import type { AchievementImage } from "../../lib/types";
 const CATEGORIES = ["Certification", "Award", "Impact Metric", "Speaking"];
 
 export const POST: APIRoute = async ({ request }) => {
-  if (!isAuthorized(request.headers.get("cookie"))) {
+  const settings = await getSettings();
+  const hash = settings["password_hash"] || undefined;
+  if (!isAuthorized(request.headers.get("cookie"), hash)) {
     return new Response("Unauthorized", { status: 401 });
   }
 

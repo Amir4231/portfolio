@@ -1,9 +1,16 @@
 import type { APIRoute } from "astro";
 import { isAuthorized } from "../../lib/auth";
-import { createProject, deleteProject, updateProject } from "../../lib/db";
+import {
+  createProject,
+  deleteProject,
+  getSettings,
+  updateProject,
+} from "../../lib/db";
 
 export const POST: APIRoute = async ({ request }) => {
-  if (!isAuthorized(request.headers.get("cookie"))) {
+  const settings = await getSettings();
+  const hash = settings["password_hash"] || undefined;
+  if (!isAuthorized(request.headers.get("cookie"), hash)) {
     return new Response("Unauthorized", { status: 401 });
   }
 
