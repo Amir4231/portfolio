@@ -307,13 +307,15 @@ export function sanitizeSkills(input: unknown): Record<string, string[]> | null 
 }
 
 export async function getSkills(): Promise<Record<string, string[]>> {
+  const cloneDefaults = (): Record<string, string[]> =>
+    JSON.parse(JSON.stringify(defaultSkills));
   try {
     const settings = await getSettings();
     const raw = settings["skills"];
-    if (!raw) return defaultSkills;
+    if (!raw) return cloneDefaults();
     const parsed: unknown = JSON.parse(raw);
-    return sanitizeSkills(parsed) ?? defaultSkills;
+    return sanitizeSkills(parsed) ?? cloneDefaults();
   } catch {
-    return defaultSkills;
+    return cloneDefaults();
   }
 }

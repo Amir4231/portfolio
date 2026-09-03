@@ -1,11 +1,25 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { getSkills } from "../../lib/db";
+import { getSkills, getSettings, sanitizeSkills } from "../../lib/db";
 
 const skills = await getSkills();
 const saved = Astro.url.searchParams.get("saved");
 const error = Astro.url.searchParams.get("error");
 const initialJson = JSON.stringify(skills);
+let showCorrupt = false;
+try {
+  const settings = await getSettings();
+  const raw = settings["skills"];
+  if (raw) {
+    try {
+      if (sanitizeSkills(JSON.parse(raw)) === null) showCorrupt = true;
+    } catch {
+      showCorrupt = true;
+    }
+  }
+} catch {
+  showCorrupt = false;
+}
 ---
 
 <AdminLayout title="Edit stack">
@@ -18,6 +32,9 @@ const initialJson = JSON.stringify(skills);
   )}
   {error === "invalid" && (
     <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">That data looked invalid. Keep 1–10 categories, 1–30 items each.</p>
+  )}
+  {showCorrupt && (
+    <p class="mt-4 rounded-sm border border-amber-600/40 bg-amber-600/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">Saved data was invalid, showing defaults. Save to restore.</p>
   )}
 
   <form id="stack-form" method="post" action="/api/skills" class="mt-8 space-y-6">
