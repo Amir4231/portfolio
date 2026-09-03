@@ -13,12 +13,20 @@ const error = Astro.url.searchParams.get("error");
   <p class="mt-2 text-sm text-muted">
     Add, edit, or remove what appears on your site. Changes go live immediately.
   </p>
-  <a
-    href="/admin/settings"
-    class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:opacity-80"
-  >
-    Edit site details (name, photo, links) →
-  </a>
+  <div class="mt-4 flex flex-wrap gap-5">
+    <a
+      href="/admin/settings"
+      class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:opacity-80"
+    >
+      Edit site details (name, photo, links) →
+    </a>
+    <a
+      href="/admin/stack"
+      class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:opacity-80"
+    >
+      Edit stack →
+    </a>
+  </div>
 
   {error === "title" && (
     <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">
