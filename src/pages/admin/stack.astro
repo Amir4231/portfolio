@@ -1,0 +1,147 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getSkills } from "../../lib/db";
+
+const skills = await getSkills();
+const saved = Astro.url.searchParams.get("saved");
+const error = Astro.url.searchParams.get("error");
+const initialJson = JSON.stringify(skills);
+---
+
+<AdminLayout title="Edit stack">
+  <a href="/admin" class="text-sm text-muted transition hover:text-ink">← Back to admin</a>
+  <h1 class="mt-4 font-serif text-2xl font-semibold text-ink">Stack</h1>
+  <p class="mt-2 text-sm text-muted">Rename, add, remove, or reorder categories and items. Changes go live immediately.</p>
+
+  {saved && (
+    <p class="mt-4 rounded-sm border border-emerald-600/40 bg-emerald-600/10 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>
+  )}
+  {error === "invalid" && (
+    <p class="mt-4 rounded-sm border border-accent/40 bg-accent-soft px-3 py-2 text-sm text-accent">That data looked invalid. Keep 1–10 categories, 1–30 items each.</p>
+  )}
+
+  <form id="stack-form" method="post" action="/api/skills" class="mt-8 space-y-6">
+    <input type="hidden" name="skills" id="skills-payload" value={initialJson} />
+    <div id="categories" class="space-y-6"></div>
+    <div class="flex flex-wrap gap-3">
+      <button type="button" id="add-category" class="rounded-sm border border-line bg-raised px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">+ Add category</button>
+      <button type="submit" class="rounded-sm bg-accent px-5 py-2 text-sm font-semibold text-surface transition hover:opacity-90">Save stack</button>
+    </div>
+  </form>
+
+  <script define:vars={{ initialJson }}>
+    const initial = JSON.parse(initialJson);
+    const wrap = document.getElementById("categories");
+    const payload = document.getElementById("skills-payload");
+    const form = document.getElementById("stack-form");
+
+    function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+    function render() {
+      wrap.innerHTML = "";
+      const cats = JSON.parse(payload.value || "{}");
+      Object.entries(cats).forEach(([cat, items], ci) => {
+        const div = document.createElement("div");
+        div.className = "rounded-sm border border-line bg-raised p-4";
+        div.innerHTML = `
+          <div class="flex items-center gap-2">
+            <input data-cat="${ci}" value="${esc(cat)}" maxlength="30"
+              class="w-full rounded-sm border border-line bg-surface px-3 py-2 text-sm font-semibold text-ink focus:border-accent focus:outline-none" />
+            <button type="button" data-up="${ci}" title="Move up" class="px-2 py-1 text-sm text-muted hover:text-accent">↑</button>
+            <button type="button" data-down="${ci}" title="Move down" class="px-2 py-1 text-sm text-muted hover:text-accent">↓</button>
+            <button type="button" data-delcat="${ci}" class="px-2 py-1 text-xs text-faint hover:text-accent">Delete</button>
+          </div>
+          <div class="mt-3 space-y-2" data-items="${ci}"></div>
+          <button type="button" data-additem="${ci}" class="mt-3 text-xs font-semibold text-accent hover:opacity-80">+ Add item</button>`;
+        wrap.appendChild(div);
+        const list = div.querySelector(`[data-items="${ci}"]`);
+        (items).forEach((it, ii) => {
+          const row = document.createElement("div");
+          row.className = "flex items-center gap-2";
+          row.innerHTML = `
+            <input data-item="${ci}-${ii}" value="${esc(it)}" maxlength="60"
+              class="w-full rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink focus:border-accent focus:outline-none" />
+            <button type="button" data-delitem="${ci}-${ii}" class="shrink-0 px-2 py-1 text-xs text-faint hover:text-accent">×</button>`;
+          list.appendChild(row);
+        });
+      });
+    }
+
+    function collect() {
+      const cats = JSON.parse(payload.value || "{}");
+      const keys = Object.keys(cats);
+      const next = {};
+      document.querySelectorAll('#categories > div').forEach((div, newCi) => {
+        const catInput = div.querySelector('input[data-cat]');
+        const name = catInput.value.trim().slice(0, 30);
+        if (!name) return;
+        const vals = [];
+        div.querySelectorAll('input[data-item]').forEach((inp) => {
+          const v = inp.value.trim().slice(0, 60);
+          if (v) vals.push(v);
+        });
+        if (vals.length) next[name] = vals.slice(0, 30);
+      });
+      void keys;
+      payload.value = JSON.stringify(next);
+      return next;
+    }
+
+    wrap.addEventListener("input", (e) => { collect(); });
+    wrap.addEventListener("click", (e) => {
+      const t = e.target.closest("button");
+      if (!t) return;
+      let data = JSON.parse(payload.value || "{}");
+      let keys = Object.keys(data);
+      if (t.hasAttribute("data-delcat")) {
+        const i = Number(t.getAttribute("data-delcat"));
+        delete data[keys[i]];
+      } else if (t.hasAttribute("data-up")) {
+        const i = Number(t.getAttribute("data-up"));
+        if (i > 0) {
+          const entries = Object.entries(data);
+          [entries[i-1], entries[i]] = [entries[i], entries[i-1]];
+          data = Object.fromEntries(entries);
+        }
+      } else if (t.hasAttribute("data-down")) {
+        const i = Number(t.getAttribute("data-down"));
+        const entries = Object.entries(data);
+        if (i < entries.length - 1) {
+          [entries[i+1], entries[i]] = [entries[i], entries[i+1]];
+          data = Object.fromEntries(entries);
+        }
+      } else if (t.hasAttribute("data-additem")) {
+        const i = Number(t.getAttribute("data-additem"));
+        data[keys[i]] = [...(data[keys[i]] || []), ""].slice(0, 30);
+        payload.value = JSON.stringify(data);
+        render();
+        const last = wrap.querySelector(`[data-items="${i}"] input:last-child`);
+        if (last) last.focus();
+        return;
+      } else if (t.hasAttribute("data-delitem")) {
+        const [ci, ii] = t.getAttribute("data-delitem").split("-").map(Number);
+        const k = keys[ci];
+        data[k] = data[k].filter((_, idx) => idx !== ii);
+        if (!data[k].length) data[k] = [""];
+      } else return;
+      payload.value = JSON.stringify(data);
+      collect();
+      render();
+      collect();
+    });
+
+    document.getElementById("add-category").addEventListener("click", () => {
+      const data = JSON.parse(payload.value || "{}");
+      if (Object.keys(data).length >= 10) return;
+      let n = "New category";
+      let c = 2;
+      while (data[n]) { n = `New category ${c++}`; }
+      data[n] = [""];
+      payload.value = JSON.stringify(data);
+      render();
+    });
+
+    form.addEventListener("submit", () => { collect(); });
+    render();
+  </script>
+</AdminLayout>
