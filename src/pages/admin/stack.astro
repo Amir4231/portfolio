@@ -29,13 +29,12 @@ const initialJson = JSON.stringify(skills);
     </div>
   </form>
 
-  <script define:vars={{ initialJson }}>
-    const initial = JSON.parse(initialJson);
+  <script>
     const wrap = document.getElementById("categories");
     const payload = document.getElementById("skills-payload");
     const form = document.getElementById("stack-form");
 
-    function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+    function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
     function render() {
       wrap.innerHTML = "";
@@ -68,10 +67,8 @@ const initialJson = JSON.stringify(skills);
     }
 
     function collect() {
-      const cats = JSON.parse(payload.value || "{}");
-      const keys = Object.keys(cats);
       const next = {};
-      document.querySelectorAll('#categories > div').forEach((div, newCi) => {
+      document.querySelectorAll('#categories > div').forEach((div) => {
         const catInput = div.querySelector('input[data-cat]');
         const name = catInput.value.trim().slice(0, 30);
         if (!name) return;
@@ -82,12 +79,11 @@ const initialJson = JSON.stringify(skills);
         });
         if (vals.length) next[name] = vals.slice(0, 30);
       });
-      void keys;
       payload.value = JSON.stringify(next);
       return next;
     }
 
-    wrap.addEventListener("input", (e) => { collect(); });
+    wrap.addEventListener("input", () => { collect(); });
     wrap.addEventListener("click", (e) => {
       const t = e.target.closest("button");
       if (!t) return;
@@ -115,7 +111,7 @@ const initialJson = JSON.stringify(skills);
         data[keys[i]] = [...(data[keys[i]] || []), ""].slice(0, 30);
         payload.value = JSON.stringify(data);
         render();
-        const last = wrap.querySelector(`[data-items="${i}"] input:last-child`);
+        const last = wrap.querySelector(`[data-items="${i}"] > div:last-child input`);
         if (last) last.focus();
         return;
       } else if (t.hasAttribute("data-delitem")) {
@@ -125,7 +121,6 @@ const initialJson = JSON.stringify(skills);
         if (!data[k].length) data[k] = [""];
       } else return;
       payload.value = JSON.stringify(data);
-      collect();
       render();
       collect();
     });
