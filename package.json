@@ -21,6 +21,7 @@
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@libsql/client": "^0.17.4",
     "@lucide/astro": "^1.33.0",
+    "@splinetool/runtime": "^2.0.37",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.4",
