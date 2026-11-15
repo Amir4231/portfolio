@@ -4,11 +4,11 @@ import { skills as defaultSkills } from "../data/skills";
 
 const url =
   (process.env.TURSO_DATABASE_URL as string | undefined) ??
-  (import.meta.env.TURSO_DATABASE_URL as string | undefined) ??
+  (import.meta.env?.TURSO_DATABASE_URL as string | undefined) ??
   "file:./local.db";
 const authToken =
   (process.env.TURSO_AUTH_TOKEN as string | undefined) ??
-  (import.meta.env.TURSO_AUTH_TOKEN as string | undefined);
+  (import.meta.env?.TURSO_AUTH_TOKEN as string | undefined);
 
 export const db = createClient({ url, authToken });
 

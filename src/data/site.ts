@@ -1,3 +1,5 @@
+import { sanitizeImageUrl, sanitizeSafeUrl } from "../lib/security";
+
 export interface Site {
   name: string;
   nickname: string;
@@ -54,13 +56,13 @@ export function resolveSite(settings?: Record<string, string>): Site {
     role: s.role || site.role,
     location: s.location || site.location,
     email: s.email || site.email,
-    github: s.github || site.github,
-    linkedin: s.linkedin || site.linkedin,
-    twitter: s.twitter || site.twitter,
-    whatsapp: s.whatsapp || site.whatsapp,
-    resume: s.resume || site.resume,
+    github: sanitizeSafeUrl(s.github) || site.github,
+    linkedin: sanitizeSafeUrl(s.linkedin) || site.linkedin,
+    twitter: sanitizeSafeUrl(s.twitter) || site.twitter,
+    whatsapp: sanitizeSafeUrl(s.whatsapp) || site.whatsapp,
+    resume: sanitizeSafeUrl(s.resume) || site.resume,
     tagline: s.tagline || site.tagline,
     builtWith: s.builtWith || site.builtWith,
-    avatar: s.avatar || undefined,
+    avatar: sanitizeImageUrl(s.avatar) || undefined,
   };
 }

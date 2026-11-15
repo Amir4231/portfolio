@@ -1,6 +1,7 @@
 ---
 import type { AchievementImage } from "../lib/types";
 import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import { sanitizeImageUrl } from "../lib/security";
 
 interface Props {
   images: AchievementImage[];
@@ -8,6 +9,10 @@ interface Props {
 }
 
 const { images, title } = Astro.props;
+const safeImages = images
+  .map((img) => ({ ...img, src: sanitizeImageUrl(img.src) }))
+  .filter((img) => Boolean(img.src));
+
 const altFor = (img: AchievementImage, idx: number) =>
   img.alt || `${title} — image ${idx + 1}`;
 ---
@@ -20,7 +25,7 @@ const altFor = (img: AchievementImage, idx: number) =>
   aria-label={`${title} gallery`}
 >
   <div class="carousel__viewport">
-    {images.map((img, idx) => (
+    {safeImages.map((img, idx) => (
       <div
         class="carousel__slide"
         data-slide={idx}
@@ -43,7 +48,7 @@ const altFor = (img: AchievementImage, idx: number) =>
     ))}
   </div>
 
-  {images.length > 1 && (
+  {safeImages.length > 1 && (
     <>
       <button type="button" class="carousel__nav carousel__nav--prev" data-prev aria-label="Previous image">
         <ChevronLeft class="size-5" />
@@ -52,7 +57,7 @@ const altFor = (img: AchievementImage, idx: number) =>
         <ChevronRight class="size-5" />
       </button>
       <div class="carousel__dots" role="tablist" aria-label="Choose slide">
-        {images.map((_, idx) => (
+        {safeImages.map((_, idx) => (
           <button
             type="button"
             role="tab"
