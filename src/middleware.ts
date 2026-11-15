@@ -13,9 +13,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const settings = await getSettings();
   context.locals.settings = settings;
 
+  const headers = context.request.headers;
   const ip =
-    context.clientAddress ??
-    context.request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    headers.get("x-real-ip")?.trim() ||
+    headers.get("cf-connecting-ip")?.trim() ||
+    headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     "unknown";
 
   const passwordHash = settings["password_hash"] || undefined;
