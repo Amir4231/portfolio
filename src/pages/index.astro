@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.astro";
+import Desk3D from "../components/Desk3D.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import AchievementCard from "../components/AchievementCard.astro";
 import TechStack from "../components/TechStack.astro";
@@ -24,6 +25,12 @@ const skills = await getSkills();
 <BaseLayout>
   <Hero />
 
+  <section class="mx-auto max-w-6xl px-4 pb-4 sm:px-6" aria-label="Interactive 3D desk">
+    <Desk3D
+      sceneUrl="https://prod.spline.design/bWz9fowFHJlah20N/scene.splinecode"
+      title="Interactive 3D agent desk scene"
+    />
+  </section>
 
   <section id="projects" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 sm:py-20">
     <div class="flex flex-wrap items-end justify-between gap-4">

@@ -1,7 +1,6 @@
 ---
 import type { Achievement } from "../lib/types";
 import { ArrowUpRight } from "@lucide/astro";
-import { sanitizeSafeUrl } from "../lib/security";
 
 interface Props {
   achievement: Achievement;
@@ -9,7 +8,6 @@ interface Props {
 }
 
 const { achievement, delay = 0 } = Astro.props;
-const safeCredentialUrl = sanitizeSafeUrl(achievement.credentialUrl);
 ---
 
 <article class="border-t border-line" data-reveal data-reveal-delay={delay}>
@@ -50,9 +48,9 @@ const safeCredentialUrl = sanitizeSafeUrl(achievement.credentialUrl);
           {achievement.highlightMetric}
         </span>
       )}
-      {safeCredentialUrl && (
+      {achievement.credentialUrl && (
         <a
-          href={safeCredentialUrl}
+          href={achievement.credentialUrl}
           rel="noopener noreferrer"
           target="_blank"
           class="inline-flex items-center gap-1 text-xs text-faint transition hover:text-accent"

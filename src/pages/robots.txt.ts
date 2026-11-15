@@ -4,7 +4,6 @@ export const GET: APIRoute = async ({ url }) => {
   const body = `User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /api/
 
 Sitemap: ${url.origin}/sitemap.xml
 `;

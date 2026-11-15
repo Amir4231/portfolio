@@ -1,7 +1,6 @@
 ---
 import type { Project } from "../lib/types";
 import { ArrowUpRight } from "@lucide/astro";
-import { sanitizeSafeUrl } from "../lib/security";
 
 interface Props {
   project: Project;
@@ -10,8 +9,6 @@ interface Props {
 
 const { project, delay = 0 } = Astro.props;
 const year = project.pubDate ? new Date(project.pubDate).getFullYear() : "";
-const safeGithubUrl = sanitizeSafeUrl(project.githubUrl);
-const safeLiveUrl = sanitizeSafeUrl(project.liveUrl);
 ---
 
 <article class="border-t border-line" data-reveal data-reveal-delay={delay}>
@@ -36,9 +33,9 @@ const safeLiveUrl = sanitizeSafeUrl(project.liveUrl);
         {project.tags.length > 0 && (
           <span class="text-faint">{project.tags.join(" · ")}</span>
         )}
-        {safeGithubUrl && (
+        {project.githubUrl && (
           <a
-            href={safeGithubUrl}
+            href={project.githubUrl}
             rel="noopener noreferrer"
             target="_blank"
             class="text-muted transition hover:text-accent"
@@ -46,9 +43,9 @@ const safeLiveUrl = sanitizeSafeUrl(project.liveUrl);
             Code ↗
           </a>
         )}
-        {safeLiveUrl && (
+        {project.liveUrl && (
           <a
-            href={safeLiveUrl}
+            href={project.liveUrl}
             rel="noopener noreferrer"
             target="_blank"
             class="text-muted transition hover:text-accent"

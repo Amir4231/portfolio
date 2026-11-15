@@ -4,7 +4,6 @@ import { ArrowLeft, ArrowUpRight } from "@lucide/astro";
 import AchievementCarousel from "../../components/AchievementCarousel.astro";
 import { getAchievement } from "../../lib/db";
 import { renderMarkdown } from "../../lib/markdown";
-import { sanitizeSafeUrl } from "../../lib/security";
 
 const id = Astro.params.id ?? "";
 const achievement = await getAchievement(id);
@@ -14,7 +13,6 @@ if (!achievement) {
 }
 
 const html = renderMarkdown(achievement.body);
-const safeCredentialUrl = sanitizeSafeUrl(achievement.credentialUrl);
 const firstImage = achievement.images[0];
 const ogImage = firstImage?.src.startsWith("http")
   ? firstImage.src
@@ -56,9 +54,9 @@ const ogImage = firstImage?.src.startsWith("http")
             {achievement.highlightMetric}
           </span>
         )}
-        {safeCredentialUrl && (
+        {achievement.credentialUrl && (
           <a
-            href={safeCredentialUrl}
+            href={achievement.credentialUrl}
             rel="noopener noreferrer"
             target="_blank"
             class="link-sweep inline-flex items-center gap-1.5 font-medium text-muted hover:text-ink"

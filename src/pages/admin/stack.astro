@@ -48,28 +48,14 @@ try {
 
   <script>
     const wrap = document.getElementById("categories");
-    const payload = document.getElementById("skills-payload") as HTMLInputElement | null;
-    const form = document.getElementById("stack-form") as HTMLFormElement | null;
-    const addCatBtn = document.getElementById("add-category");
+    const payload = document.getElementById("skills-payload");
+    const form = document.getElementById("stack-form");
 
-    function esc(s: unknown): string {
-      return String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
+    function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
     function render() {
-      if (!wrap || !payload) return;
       wrap.innerHTML = "";
-      let cats: Record<string, string[]> = {};
-      try {
-        cats = JSON.parse(payload.value || "{}");
-      } catch {
-        cats = {};
-      }
+      const cats = JSON.parse(payload.value || "{}");
       Object.entries(cats).forEach(([cat, items], ci) => {
         const div = document.createElement("div");
         div.className = "rounded-sm border border-line bg-raised p-4";
@@ -85,30 +71,26 @@ try {
           <button type="button" data-additem="${ci}" class="mt-3 text-xs font-semibold text-accent hover:opacity-80">+ Add item</button>`;
         wrap.appendChild(div);
         const list = div.querySelector(`[data-items="${ci}"]`);
-        if (list && Array.isArray(items)) {
-          items.forEach((it: string, ii: number) => {
-            const row = document.createElement("div");
-            row.className = "flex items-center gap-2";
-            row.innerHTML = `
-              <input data-item="${ci}-${ii}" value="${esc(it)}" maxlength="60"
-                class="w-full rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink focus:border-accent focus:outline-none" />
-              <button type="button" data-delitem="${ci}-${ii}" class="shrink-0 px-2 py-1 text-xs text-faint hover:text-accent">×</button>`;
-            list.appendChild(row);
-          });
-        }
+        (items).forEach((it, ii) => {
+          const row = document.createElement("div");
+          row.className = "flex items-center gap-2";
+          row.innerHTML = `
+            <input data-item="${ci}-${ii}" value="${esc(it)}" maxlength="60"
+              class="w-full rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink focus:border-accent focus:outline-none" />
+            <button type="button" data-delitem="${ci}-${ii}" class="shrink-0 px-2 py-1 text-xs text-faint hover:text-accent">×</button>`;
+          list.appendChild(row);
+        });
       });
     }
 
     function collect() {
-      if (!payload) return {};
-      const next: Record<string, string[]> = {};
+      const next = {};
       document.querySelectorAll('#categories > div').forEach((div) => {
-        const catInput = div.querySelector<HTMLInputElement>('input[data-cat]');
-        if (!catInput) return;
+        const catInput = div.querySelector('input[data-cat]');
         const name = catInput.value.trim().slice(0, 30);
         if (!name) return;
-        const vals: string[] = [];
-        div.querySelectorAll<HTMLInputElement>('input[data-item]').forEach((inp) => {
+        const vals = [];
+        div.querySelectorAll('input[data-item]').forEach((inp) => {
           const v = inp.value.trim().slice(0, 60);
           if (v) vals.push(v);
         });
@@ -118,80 +100,60 @@ try {
       return next;
     }
 
-    if (wrap && payload) {
-      wrap.addEventListener("input", () => { collect(); });
-      wrap.addEventListener("click", (e) => {
-        const target = e.target as HTMLElement | null;
-        const t = target?.closest("button");
-        if (!t) return;
-        let data: Record<string, string[]> = {};
-        try {
-          data = JSON.parse(payload.value || "{}");
-        } catch {
-          data = {};
-        }
-        let keys = Object.keys(data);
-        if (t.hasAttribute("data-delcat")) {
-          const i = Number(t.getAttribute("data-delcat"));
-          delete data[keys[i]];
-        } else if (t.hasAttribute("data-up")) {
-          const i = Number(t.getAttribute("data-up"));
-          if (i > 0) {
-            const entries = Object.entries(data);
-            [entries[i - 1], entries[i]] = [entries[i], entries[i - 1]];
-            data = Object.fromEntries(entries);
-          }
-        } else if (t.hasAttribute("data-down")) {
-          const i = Number(t.getAttribute("data-down"));
+    wrap.addEventListener("input", () => { collect(); });
+    wrap.addEventListener("click", (e) => {
+      const t = e.target.closest("button");
+      if (!t) return;
+      let data = JSON.parse(payload.value || "{}");
+      let keys = Object.keys(data);
+      if (t.hasAttribute("data-delcat")) {
+        const i = Number(t.getAttribute("data-delcat"));
+        delete data[keys[i]];
+      } else if (t.hasAttribute("data-up")) {
+        const i = Number(t.getAttribute("data-up"));
+        if (i > 0) {
           const entries = Object.entries(data);
-          if (i < entries.length - 1) {
-            [entries[i + 1], entries[i]] = [entries[i], entries[i + 1]];
-            data = Object.fromEntries(entries);
-          }
-        } else if (t.hasAttribute("data-additem")) {
-          const i = Number(t.getAttribute("data-additem"));
-          data[keys[i]] = [...(data[keys[i]] || []), ""].slice(0, 30);
-          payload.value = JSON.stringify(data);
-          render();
-          const last = wrap.querySelector<HTMLInputElement>(`[data-items="${i}"] > div:last-child input`);
-          if (last) last.focus();
-          return;
-        } else if (t.hasAttribute("data-delitem")) {
-          const attr = t.getAttribute("data-delitem") || "";
-          const [ci, ii] = attr.split("-").map(Number);
-          const k = keys[ci];
-          if (data[k]) {
-            data[k] = data[k].filter((_: string, idx: number) => idx !== ii);
-            if (!data[k].length) data[k] = [""];
-          }
-        } else return;
-        payload.value = JSON.stringify(data);
-        render();
-        collect();
-      });
-    }
-
-    if (addCatBtn && payload) {
-      addCatBtn.addEventListener("click", () => {
-        let data: Record<string, string[]> = {};
-        try {
-          data = JSON.parse(payload.value || "{}");
-        } catch {
-          data = {};
+          [entries[i-1], entries[i]] = [entries[i], entries[i-1]];
+          data = Object.fromEntries(entries);
         }
-        if (Object.keys(data).length >= 10) return;
-        let n = "New category";
-        let c = 2;
-        while (data[n]) { n = `New category ${c++}`; }
-        data[n] = [""];
+      } else if (t.hasAttribute("data-down")) {
+        const i = Number(t.getAttribute("data-down"));
+        const entries = Object.entries(data);
+        if (i < entries.length - 1) {
+          [entries[i+1], entries[i]] = [entries[i], entries[i+1]];
+          data = Object.fromEntries(entries);
+        }
+      } else if (t.hasAttribute("data-additem")) {
+        const i = Number(t.getAttribute("data-additem"));
+        data[keys[i]] = [...(data[keys[i]] || []), ""].slice(0, 30);
         payload.value = JSON.stringify(data);
         render();
-      });
-    }
+        const last = wrap.querySelector(`[data-items="${i}"] > div:last-child input`);
+        if (last) last.focus();
+        return;
+      } else if (t.hasAttribute("data-delitem")) {
+        const [ci, ii] = t.getAttribute("data-delitem").split("-").map(Number);
+        const k = keys[ci];
+        data[k] = data[k].filter((_, idx) => idx !== ii);
+        if (!data[k].length) data[k] = [""];
+      } else return;
+      payload.value = JSON.stringify(data);
+      render();
+      collect();
+    });
 
-    if (form) {
-      form.addEventListener("submit", () => { collect(); });
-    }
+    document.getElementById("add-category").addEventListener("click", () => {
+      const data = JSON.parse(payload.value || "{}");
+      if (Object.keys(data).length >= 10) return;
+      let n = "New category";
+      let c = 2;
+      while (data[n]) { n = `New category ${c++}`; }
+      data[n] = [""];
+      payload.value = JSON.stringify(data);
+      render();
+    });
+
+    form.addEventListener("submit", () => { collect(); });
     render();
   </script>
 </AdminLayout>
