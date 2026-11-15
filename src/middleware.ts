@@ -18,6 +18,7 @@ function getClientIp(context: {
   clientAddress?: string;
   request: Request;
 }): string {
+  if (context.clientAddress) return context.clientAddress;
   const headers = context.request.headers;
   const xRealIp = headers.get("x-real-ip");
   if (xRealIp) return xRealIp.trim();
@@ -27,11 +28,6 @@ function getClientIp(context: {
   if (forwarded) {
     const first = forwarded.split(",")[0].trim();
     if (first) return first;
-  }
-  try {
-    if (context.clientAddress) return context.clientAddress;
-  } catch {
-    // clientAddress throws in some serverless adapters like @astrojs/vercel
   }
   return "unknown";
 }
@@ -172,12 +168,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://adservice.google.com https://*.googlesyndication.com",
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://pagead2.googlesyndication.com https://*.google.com https://*.googlesyndication.com",
-      "frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com",
+      "connect-src 'self'",
       "frame-ancestors 'none'",
       "form-action 'self'",
       "base-uri 'self'",
